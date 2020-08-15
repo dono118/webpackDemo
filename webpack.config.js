@@ -126,22 +126,55 @@ module.exports = {
                     outputPath: 'media'
                 }
             },
+            // {
+            //     /**
+            //      * 语法检查: eslint-loader
+            //      *   注意: 只检查自己写的源代码, 第三方库是不用检查的
+            //      *         下一行不进行eslint检查 eslint-disable-next-line
+            //      *   设置检查规则: 在 package.json-->eslintConfig 中设置
+            //      *   推荐使用airbnb --> eslint-config-airbnb-base eslint eslint-plugin-import
+            //      *  "eslintConfig": {
+            //             "extends": "airbnb-base"
+            //         }
+            //      */
+            //     test: /\.js$/,
+            //     exclude: /node_modules/,
+            //     loader: 'eslint-loader',
+            //     options: {
+            //         // 自动修复eslint语法错误
+            //         fix: true
+            //     }
+            // },
             {
                 /**
-                 * 语法检查: eslint-loader
-                 *   注意: 只检查自己写的源代码, 第三方库是不用检查的
-                 *   设置检查规则: 在 package.json-->eslintConfig 中设置
-                 *   推荐使用airbnb --> eslint-config-airbnb-base eslint eslint-plugin-import
-                 *  "eslintConfig": {
-                        "extends": "airbnb-base"
-                    }
+                 * js兼容性处理: babel-loader @babel/core @babel/preset-env core-js
                  */
                 test: /\.js$/,
                 exclude: /node_modules/,
-                loader: 'eslint-loader',
+                loader: 'babel-loader',
                 options: {
-                    // 自动修复eslint语法错误
-                    fix: true
+                    // 预设: 指示babel如何做兼容性处理
+                    presets: [
+                        [
+                            '@babel/preset-env',
+                            {
+                                // 按需加载
+                                useBuiltIns: 'usage',
+                                // 指定core-js版本
+                                corejs: {
+                                    version: 3
+                                },
+                                // 指定兼容性做到哪个版本浏览器
+                                targets: {
+                                    chrome: '60',
+                                    firefox: '60',
+                                    ie: '9',
+                                    safari: '10',
+                                    edge: '17'
+                                }
+                            }
+                        ]
+                    ]
                 }
             }
         ]
