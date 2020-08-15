@@ -189,7 +189,14 @@ module.exports = {
          */
         new HtmlWebpackPlugin({
             // 复制 ./src/index.html 文件到目标路径, 并引入打包输出的所有资源(js,css等)
-            template: './src/index.html'
+            template: './src/index.html',
+            // 压缩html
+            minify: {
+                // 去除空格
+                collapseWhitespace: true,
+                // 移除注释
+                removeComments: true
+            }
         }),
         new MiniCssExtractPlugin({
             // 对输出的css文件进行重命名
@@ -200,7 +207,7 @@ module.exports = {
     ],
     // 模式
     mode: 'development', //开发模式
-    // mode: 'production'
+    // mode: 'production' //生成环境会自动压缩js代码
 
     // 开发服务器 devServer: 用来自动化 (自动编译, 自动打开浏览器, 自动刷新浏览器)
     // 特点: 只会在内存中编译打包, 不会有任何输出
