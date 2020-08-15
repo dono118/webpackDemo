@@ -1,8 +1,5 @@
 /**
- * 开发环境配置:
- *    运行项目指令:
- *      webpack 会将打包结果输出到目标路径
- *      npx webpack-dev-server 只会在内存中打包编译, 没有输出
+ * 生产环境配置
  */
 
 // resolve用来拼接绝对路径
@@ -15,7 +12,55 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const OptimizeCssAssetsWebpackPlugin = require("optimize-css-assets-webpack-plugin");
 
 // 设置nodejs环境变量
-process.env.NODE_ENV = "development";
+process.env.NODE_ENV = "production";//生产环境
+
+// 复用 loader
+const CommonCssLoader = [
+    // 创建style标签, 将js中的样式资源放进去, 并添加到head中生效
+    // 'style-loader',
+    // 这个loader取代style-loader 作用: 提取js中的css成单独文件
+    {
+        loader: MiniCssExtractPlugin.loader,
+        options: {
+            // 解决css文件里背景图片路径不对的问题
+            publicPath: '../'
+        }
+    },
+    // 将css文件变成commonjs模块加载到js中, 里面内容是样式字符串
+    'css-loader',
+    /**
+     * css兼容性处理: postcss --> postcss-loader postcss-preset-env
+     * 
+     * 帮postcss找到package.json中browserslist里面的配置, 通过配置加载指定的兼容性样式
+     * "browserslist": {
+            // 开发环境 --> 设置nodejs环境变量: process.env.NODE_ENV = "development"
+            "development": [
+            "last 1 chrome version",
+            "last 1 firefox version",
+            "last 1 safari version"
+            ],
+            // 生产环境: 默认是生产环境
+            "production": [
+            ">0.2%",
+            "not dead",
+            "not op_mini all"
+            ]
+        }
+     */
+    // 使用loader的默认配置
+    // 'postcss-loader',
+    // 修改loader的配置
+    {
+        loader: 'postcss-loader',
+        options: {
+            ident: 'postcss',
+            plugins: () => [
+                // postcass的插件
+                require('postcss-preset-env')()
+            ]
+        }
+    }
+]
 
 module.exports = {
     // webpack配置
@@ -38,53 +83,15 @@ module.exports = {
                 // 匹配哪些文件
                 test: /\.css$/,
                 // 使用哪些loader进行处理
+                // use 数组中loader执行顺序: 从右往左, 从下往上
                 use: [
-                    // use 数组中loader执行顺序: 先执行 css-loader 后执行 style-loader
-                    // 创建style标签, 将js中的样式资源放进去, 并添加到head中生效
-                    // 'style-loader',
-                    // 这个loader取代style-loader 作用: 提取js中的css成单独文件
-                    MiniCssExtractPlugin.loader,
-                    // 将css文件变成commonjs模块加载到js中, 里面内容是样式字符串
-                    'css-loader',
-                    /**
-                     * css兼容性处理: postcss --> postcss-loader postcss-preset-env
-                     * 
-                     * 帮postcss找到package.json中browserslist里面的配置, 通过配置加载指定的兼容性样式
-                     * "browserslist": {
-                            // 开发环境 --> 设置nodejs环境变量: process.env.NODE_ENV = "development"
-                            "development": [
-                            "last 1 chrome version",
-                            "last 1 firefox version",
-                            "last 1 safari version"
-                            ],
-                            // 生产环境: 默认是生产环境
-                            "production": [
-                            ">0.2%",
-                            "not dead",
-                            "not op_mini all"
-                            ]
-                        }
-                     */
-                    // 使用loader的默认配置
-                    // 'postcss-loader',
-                    // 修改loader的配置
-                    {
-                        loader: 'postcss-loader',
-                        options: {
-                            ident: 'postcss',
-                            plugins: () => [
-                                // postcass的插件
-                                require('postcss-preset-env')()
-                            ]
-                        }
-                    }
+                    ...CommonCssLoader
                 ]
             },
             {
                 test: /\.less$/,
                 use: [
-                    'style-loader',
-                    'css-loader',
+                    ...CommonCssLoader,
                     // 将less文件编译成css文件
                     // 需要下载less和less-loader
                     'less-loader'
@@ -138,10 +145,44 @@ module.exports = {
                  */
                 test: /\.js$/,
                 exclude: /node_modules/,
+                // 优先执行
+                enforce: 'pre',
                 loader: 'eslint-loader',
                 options: {
                     // 自动修复eslint语法错误
                     fix: true
+                }
+            },
+            {
+                /**
+                 * js兼容性处理: babel-loader @babel/core @babel/preset-env core-js
+                 */
+                test: /\.js$/,
+                exclude: /node_modules/,
+                loader: 'babel-loader',
+                options: {
+                    // 预设: 指示babel如何做兼容性处理
+                    presets: [
+                        [
+                            '@babel/preset-env',
+                            {
+                                // 按需加载
+                                useBuiltIns: 'usage',
+                                // 指定core-js版本
+                                corejs: {
+                                    version: 3
+                                },
+                                // 指定兼容性做到哪个版本浏览器
+                                targets: {
+                                    chrome: '60',
+                                    firefox: '60',
+                                    ie: '9',
+                                    safari: '10',
+                                    edge: '17'
+                                }
+                            }
+                        ]
+                    ]
                 }
             }
         ]
@@ -156,7 +197,15 @@ module.exports = {
          */
         new HtmlWebpackPlugin({
             // 复制 ./src/index.html 文件到目标路径, 并引入打包输出的所有资源(js,css等)
-            template: './src/index.html'
+            template: './src/index.html',
+            /**
+             * html-webpack-plugin could not minify the generated output.
+             * In production mode the html minifcation is enabled by default.
+             * If you are not generating a valid html output please disable it manually.
+             * You can do so by adding the following setting to your HtmlWebpackPlugin config:
+             *      minify: false
+             */
+            minify: false
         }),
         new MiniCssExtractPlugin({
             // 对输出的css文件进行重命名
@@ -166,21 +215,6 @@ module.exports = {
         new OptimizeCssAssetsWebpackPlugin()
     ],
     // 模式
-    mode: 'development', //开发模式
-    // mode: 'production'
-
-    // 开发服务器 devServer: 用来自动化 (自动编译, 自动打开浏览器, 自动刷新浏览器)
-    // 特点: 只会在内存中编译打包, 不会有任何输出
-    // 启动devServer指令: npx webpack-dev-server (需下载该插件)
-    devServer: {
-        // 项目构建后的路径
-        contentBase: resolve(__dirname, 'build'),
-        // 启动gzip压缩
-        compress: true,
-        // 端口号
-        port: 3000,
-        // 自动打开浏览器
-        open: true
-    }
+    mode: 'production', //生产环境会自动压缩js代码
 
 }
