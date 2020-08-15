@@ -1,11 +1,8 @@
 /**
- * webpack.config.js webpack的配置文件
- *  作用: 指示 webpack 干哪些活 (当你运行 webpack 指令时, 会加载里面的配置)
- *  
- *  所有的构建工具都是基于node.js平台运行的, 模块化默认采用CommonJs.
- * 
- *  loader: 1. 下载   2. 使用(配置loader)
- *  plugins: 1. 下载   2.引入  3.使用
+ * 开发环境配置:
+ *    运行项目指令:
+ *      webpack 会将打包结果输出到目标路径
+ *      npx webpack-dev-server 只会在内存中打包编译, 没有输出
  */
 
 // resolve用来拼接绝对路径
@@ -16,11 +13,11 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 module.exports = {
     // webpack配置
     // 入口起点
-    entry: './src/index.js',
+    entry: './src/js/index.js',
     // 输出
     output: {
         // 输出文件名
-        filename: 'built.js',
+        filename: 'js/built.js',
         // 输出路径
         // __dirname 是node.js的变量, 代表当前文件所在目录的绝对路径
         path: resolve(__dirname, 'build')
@@ -70,7 +67,8 @@ module.exports = {
                     // 原因: 因为url-loader默认使用ES6语法解析, 而html-loader引入图片是使用CommonJs语法
                     // esModule: false,
                     // 给图片进行重命名 [hash:10] 表示取图片哈希值前10位, [ext] 表示图片的扩展名
-                    name: '[hash:10].[ext]'
+                    name: '[hash:10].[ext]',
+                    outputPath: 'imgs'
                 }
             },
             {
@@ -80,10 +78,11 @@ module.exports = {
             },
             {
                 // 打包其他资源(除了html,js,css资源以外的资源)
-                exclude: /\.(css|js|html|less)$/,
+                exclude: /\.(html|js|css|less|jpg|png|gif)$/,
                 loader: 'file-loader',
                 options: {
-                    name: '[hash:10].[ext]'
+                    name: '[hash:10].[ext]',
+                    outputPath: 'media'
                 }
             }
         ]
