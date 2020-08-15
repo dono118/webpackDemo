@@ -11,6 +11,8 @@ const { resolve } = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 // 提取css成单独文件
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+// 压缩css
+const OptimizeCssAssetsWebpackPlugin = require("optimize-css-assets-webpack-plugin");
 
 // 设置nodejs环境变量
 process.env.NODE_ENV = "development";
@@ -142,7 +144,8 @@ module.exports = {
             // 对输出的css文件进行重命名
             filename: 'css/built.css'
 
-        })
+        }),
+        new OptimizeCssAssetsWebpackPlugin()
     ],
     // 模式
     mode: 'development', //开发模式
