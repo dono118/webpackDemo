@@ -77,62 +77,6 @@ module.exports = {
     // loader的配置
     module: {
         rules: [
-            // 详细loader配置
-            // 不同文件必须配置不同loader处理
-            {
-                // 匹配哪些文件
-                test: /\.css$/,
-                // 使用哪些loader进行处理
-                // use 数组中loader执行顺序: 从右往左, 从下往上
-                use: [
-                    ...CommonCssLoader
-                ]
-            },
-            {
-                test: /\.less$/,
-                use: [
-                    ...CommonCssLoader,
-                    // 将less文件编译成css文件
-                    // 需要下载less和less-loader
-                    'less-loader'
-                ]
-            },
-            {
-                // 问题: 默认处理不了html中的图片
-                // 处理图片资源
-                test: /\.(jpg|png|gif)$/,
-                // 只用到一个loader时, 不需要写 use 数组
-                // 需下载 url-loader 和 file-loader
-                loader: 'url-loader',
-                options: {
-                    /**
-                     * 图片小于8kb, 就会被base64处理
-                     * 优点: 减少请求数量(减轻服务器压力)
-                     * 缺点: 图片体积会变大(文件请求速度变慢)
-                     */
-                    limit: 8 * 1024,
-                    // 如果解析时会出问题: [object Module] (使用npm@6.14.6下载的loader没有这个问题)
-                    // 原因: 因为url-loader默认使用ES6语法解析, 而html-loader引入图片是使用CommonJs语法
-                    // esModule: false,
-                    // 给图片进行重命名 [hash:10] 表示取图片哈希值前10位, [ext] 表示图片的扩展名
-                    name: '[hash:10].[ext]',
-                    outputPath: 'imgs'
-                }
-            },
-            {
-                test: /\.html$/,
-                // 处理HTML文件中img图片(负责引入img, 从而能被url-loader进行打包处理)
-                loader: 'html-loader'
-            },
-            {
-                // 打包其他资源(除了html,js,css资源以外的资源)
-                exclude: /\.(html|js|css|less|jpg|png|gif)$/,
-                loader: 'file-loader',
-                options: {
-                    name: '[hash:10].[ext]',
-                    outputPath: 'media'
-                }
-            },
             {
                 /**
                  * 语法检查: eslint-loader
@@ -155,35 +99,100 @@ module.exports = {
             },
             {
                 /**
-                 * js兼容性处理: babel-loader @babel/core @babel/preset-env core-js
+                 * oneOf: 只会去匹配数组中的一个loader, 匹配到一个就不再继续匹配
+                 * 一般情况下, loader的执行顺序为从右往左, 从下往上
+                 * 可以通过enforce属性去改变执行顺序
                  */
-                test: /\.js$/,
-                exclude: /node_modules/,
-                loader: 'babel-loader',
-                options: {
-                    // 预设: 指示babel如何做兼容性处理
-                    presets: [
-                        [
-                            '@babel/preset-env',
-                            {
-                                // 按需加载
-                                useBuiltIns: 'usage',
-                                // 指定core-js版本
-                                corejs: {
-                                    version: 3
-                                },
-                                // 指定兼容性做到哪个版本浏览器
-                                targets: {
-                                    chrome: '60',
-                                    firefox: '60',
-                                    ie: '9',
-                                    safari: '10',
-                                    edge: '17'
-                                }
-                            }
+                oneOf: [
+                    // 详细loader配置
+                    // 不同文件必须配置不同loader处理
+                    {
+                        // 匹配哪些文件
+                        test: /\.css$/,
+                        // 使用哪些loader进行处理
+                        // use 数组中loader执行顺序: 从右往左, 从下往上
+                        use: [
+                            ...CommonCssLoader
                         ]
-                    ]
-                }
+                    },
+                    {
+                        test: /\.less$/,
+                        use: [
+                            ...CommonCssLoader,
+                            // 将less文件编译成css文件
+                            // 需要下载less和less-loader
+                            'less-loader'
+                        ]
+                    },
+                    {
+                        // 问题: 默认处理不了html中的图片
+                        // 处理图片资源
+                        test: /\.(jpg|png|gif)$/,
+                        // 只用到一个loader时, 不需要写 use 数组
+                        // 需下载 url-loader 和 file-loader
+                        loader: 'url-loader',
+                        options: {
+                            /**
+                             * 图片小于8kb, 就会被base64处理
+                             * 优点: 减少请求数量(减轻服务器压力)
+                             * 缺点: 图片体积会变大(文件请求速度变慢)
+                             */
+                            limit: 8 * 1024,
+                            // 如果解析时会出问题: [object Module] (使用npm@6.14.6下载的loader没有这个问题)
+                            // 原因: 因为url-loader默认使用ES6语法解析, 而html-loader引入图片是使用CommonJs语法
+                            // esModule: false,
+                            // 给图片进行重命名 [hash:10] 表示取图片哈希值前10位, [ext] 表示图片的扩展名
+                            name: '[hash:10].[ext]',
+                            outputPath: 'imgs'
+                        }
+                    },
+                    {
+                        test: /\.html$/,
+                        // 处理HTML文件中img图片(负责引入img, 从而能被url-loader进行打包处理)
+                        loader: 'html-loader'
+                    },
+                    {
+                        // 打包其他资源(除了html,js,css资源以外的资源)
+                        exclude: /\.(html|js|css|less|jpg|png|gif)$/,
+                        loader: 'file-loader',
+                        options: {
+                            name: '[hash:10].[ext]',
+                            outputPath: 'media'
+                        }
+                    },
+                    {
+                        /**
+                         * js兼容性处理: babel-loader @babel/core @babel/preset-env core-js
+                         */
+                        test: /\.js$/,
+                        exclude: /node_modules/,
+                        loader: 'babel-loader',
+                        options: {
+                            // 预设: 指示babel如何做兼容性处理
+                            presets: [
+                                [
+                                    '@babel/preset-env',
+                                    {
+                                        // 按需加载
+                                        useBuiltIns: 'usage',
+                                        // 指定core-js版本
+                                        corejs: {
+                                            version: 3
+                                        },
+                                        // 指定兼容性做到哪个版本浏览器
+                                        targets: {
+                                            chrome: '60',
+                                            firefox: '60',
+                                            ie: '9',
+                                            safari: '10',
+                                            edge: '17'
+                                        }
+                                    }
+                                ]
+                            ]
+                        }
+                    }
+                ]
             }
         ]
     },
