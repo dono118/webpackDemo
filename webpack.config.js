@@ -1,5 +1,18 @@
 /**
- * 生产环境配置
+ * 优化生产环境配置
+ * 1. 使用oneOf
+ * 2. 缓存:
+ *      babel缓存
+ *        cacheDirectory: true
+ *        --> 让第二次打包构建速度更快 
+ *      资源文件缓存
+ *        hash webpack每次打包都会生成一个唯一的hash值
+ *        chunkhash 根据chunk生成, 又因为js中引入了css文件
+ *            它们同属于一个chunk 所以它们的chunkhash是一样的
+ *        问题: 因为js和css使用同一个hash值, 所以在修改其中一个文件后重新打包时,
+ *              会导致所有缓存失效, 这样不太好
+ *        解决方案: 使用contenthash 它是根据文件的内容生成的 不同文件的hash值一定不同
+ *        --> 让代码上线运行缓存更好使用
  */
 
 // resolve用来拼接绝对路径
@@ -69,7 +82,7 @@ module.exports = {
     // 输出
     output: {
         // 输出文件名
-        filename: 'js/built.js',
+        filename: 'js/built.[contenthash:10].js',
         // 输出路径
         // __dirname 是node.js的变量, 代表当前文件所在目录的绝对路径
         path: resolve(__dirname, 'build')
@@ -189,7 +202,9 @@ module.exports = {
                                         }
                                     }
                                 ]
-                            ]
+                            ],
+                            // 开启babel缓存
+                            cacheDirectory: true
                         }
                     }
                 ]
@@ -218,12 +233,12 @@ module.exports = {
         }),
         new MiniCssExtractPlugin({
             // 对输出的css文件进行重命名
-            filename: 'css/built.css'
+            filename: 'css/built.[contenthash:10].css'
 
         }),
         new OptimizeCssAssetsWebpackPlugin()
     ],
     // 模式
     mode: 'production', //生产环境会自动压缩js代码
-
+    devtool: 'source-map'
 }
