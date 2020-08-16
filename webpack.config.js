@@ -1,5 +1,8 @@
 /**
- * 生产环境配置
+ * 开发环境配置:
+ *    运行项目指令:
+ *      webpack 会将打包结果输出到目标路径
+ *      npx webpack-dev-server 只会在内存中打包编译, 没有输出
  */
 
 // resolve用来拼接绝对路径
@@ -12,7 +15,7 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const OptimizeCssAssetsWebpackPlugin = require("optimize-css-assets-webpack-plugin");
 
 // 设置nodejs环境变量
-process.env.NODE_ENV = "production";//生产环境
+process.env.NODE_ENV = "development";//开发环境
 
 // 复用 loader
 const CommonCssLoader = [
@@ -198,14 +201,12 @@ module.exports = {
         new HtmlWebpackPlugin({
             // 复制 ./src/index.html 文件到目标路径, 并引入打包输出的所有资源(js,css等)
             template: './src/index.html',
-            /**
-             * html-webpack-plugin could not minify the generated output.
-             * In production mode the html minifcation is enabled by default.
-             * If you are not generating a valid html output please disable it manually.
-             * You can do so by adding the following setting to your HtmlWebpackPlugin config:
-             *      minify: false
-             */
-            minify: false
+            minify: {
+                // 去除空格
+                collapseWhitespace: true,
+                // 移除注释
+                removeComments: true
+            }
         }),
         new MiniCssExtractPlugin({
             // 对输出的css文件进行重命名
@@ -215,6 +216,19 @@ module.exports = {
         new OptimizeCssAssetsWebpackPlugin()
     ],
     // 模式
-    mode: 'production', //生产环境会自动压缩js代码
+    mode: 'development', //开发环境
 
+    // 开发服务器 devServer: 用来自动化 (自动编译, 自动打开浏览器, 自动刷新浏览器)
+    // 特点: 只会在内存中编译打包, 不会有任何输出
+    // 启动devServer指令: npx webpack-dev-server (需下载该插件)
+    devServer: {
+        // 项目构建后的路径
+        contentBase: resolve(__dirname, 'build'),
+        // 启动gzip压缩
+        compress: true,
+        // 端口号
+        port: 3000,
+        // 自动打开浏览器
+        open: true
+    }
 }
