@@ -3,6 +3,18 @@
  *    运行项目指令:
  *      webpack 会将打包结果输出到目标路径
  *      npx webpack-dev-server 只会在内存中打包编译, 没有输出
+ * 
+ * HMR: Hot Module Replacement 热模块替换 或 模块热替换
+ *  作用: 一个模块发生变化, 只会重新打包这一个模块(而不是打包所有模块)
+ *      这样会极大的提升构建速度
+ * 
+ *  css文件: 可以使用HMR功能, 因为style-loader内部实现了~
+ *  js文件: 默认不支持HMR, 需要修改index.js,添加支持HMR功能的代码
+ *      HMR功能只对非入口js文件有效
+ *  html文件: 通常一个项目只有一个html文件即index.html, 将其添加到entry(入口起点)中即可.
+ *      所以就不需要HMR功能了
+ * 
+ * 注意: 当修改了webpack配置, 想要新配置生效, 必须重启webpack服务
  */
 
 // resolve用来拼接绝对路径
@@ -10,7 +22,7 @@ const { resolve } = require("path");
 // HtmlWebpackPlugin 打包html文件
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 // 提取css成单独文件
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+// const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 // 压缩css
 const OptimizeCssAssetsWebpackPlugin = require("optimize-css-assets-webpack-plugin");
 
@@ -20,15 +32,15 @@ process.env.NODE_ENV = "development";//开发环境
 // 复用 loader
 const CommonCssLoader = [
     // 创建style标签, 将js中的样式资源放进去, 并添加到head中生效
-    // 'style-loader',
+    'style-loader',
     // 这个loader取代style-loader 作用: 提取js中的css成单独文件
-    {
-        loader: MiniCssExtractPlugin.loader,
-        options: {
-            // 解决css文件里背景图片路径不对的问题
-            publicPath: '../'
-        }
-    },
+    // {
+    //     loader: MiniCssExtractPlugin.loader,
+    //     options: {
+    //         // 解决css文件里背景图片路径不对的问题
+    //         publicPath: '../'
+    //     }
+    // },
     // 将css文件变成commonjs模块加载到js中, 里面内容是样式字符串
     'css-loader',
     /**
@@ -68,7 +80,7 @@ const CommonCssLoader = [
 module.exports = {
     // webpack配置
     // 入口起点
-    entry: './src/js/index.js',
+    entry: ['./src/js/index.js', './src/index.html'],
     // 输出
     output: {
         // 输出文件名
@@ -208,11 +220,11 @@ module.exports = {
                 removeComments: true
             }
         }),
-        new MiniCssExtractPlugin({
-            // 对输出的css文件进行重命名
-            filename: 'css/built.css'
+        // new MiniCssExtractPlugin({
+        //     // 对输出的css文件进行重命名
+        //     filename: 'css/built.css'
 
-        }),
+        // }),
         new OptimizeCssAssetsWebpackPlugin()
     ],
     // 模式
@@ -229,6 +241,8 @@ module.exports = {
         // 端口号
         port: 3000,
         // 自动打开浏览器
-        open: true
+        open: true,
+        // 开启HMR功能
+        hot: true
     }
 }

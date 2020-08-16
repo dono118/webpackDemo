@@ -1,5 +1,7 @@
 // 引入样式文件
 import '../css/index.css';
+// 引入js文件
+import print from './print';
 
 const add = (x, y) => x + y;
 
@@ -16,3 +18,12 @@ const promise = new Promise(() => {
 
 // eslint-disable-next-line
 console.log(promise);
+
+// 如果module.hot为true, 说明开启了HMR功能
+if (module.hot) {
+  // 监听print.js, 一旦发生变化, 就会执行回调函数print()
+  // 而其他模块不会重新打包构建
+  module.hot.accept('./print.js', () => {
+    print();
+  });
+}
