@@ -13,6 +13,15 @@
  *              会导致所有缓存失效, 这样不太好
  *        解决方案: 使用contenthash 它是根据文件的内容生成的 不同文件的hash值一定不同
  *        --> 让代码上线运行缓存更好使用
+ * 
+ * 3. tree shaking: 去除无用的代码
+ *      前提: 1)必须使用ES6模块化  2)开启production环境
+ *      作用: 减小代码体积
+ *      
+ *      在package.json中配置
+ *          "sideEffects": false 意味着去除任何代码都没有副作用(都可以进行tree shaking)
+ *              问题: 会去除js中引入的css,less,@babel/polyfill等文件
+ *          "sideEffects": ["*.css","*.less"] 保留引入的css,less文件
  */
 
 // resolve用来拼接绝对路径
