@@ -22,6 +22,22 @@
  *          "sideEffects": false 意味着去除任何代码都没有副作用(都可以进行tree shaking)
  *              问题: 会去除js中引入的css,less,@babel/polyfill等文件
  *          "sideEffects": ["*.css","*.less"] 保留引入的css,less文件
+ * 
+ * 4. code split: 代码分割
+ *      1)多入口文件
+ *          entry: {
+                index: './src/js/index.js',
+                test: './src/js/test.js'
+            },
+        2) 配置optimization
+            optimization: {
+                splitChunks: {
+                    chunks: 'all'
+                }
+            },
+        3) 使用import动态导入语法引入的js文件, 会被单独打包成一个chunk
+            import(/* webpackChunkName: 'test' *\/'./test').then(...).catch(...)
+
  */
 
 // resolve用来拼接绝对路径
@@ -86,12 +102,17 @@ const CommonCssLoader = [
 
 module.exports = {
     // webpack配置
-    // 入口起点
+    // 入口起点 单入口
     entry: './src/js/index.js',
+    // 多入口
+    // entry: {
+    //     index: './src/js/index.js',
+    //     test: './src/js/test.js'
+    // },
     // 输出
     output: {
         // 输出文件名
-        filename: 'js/built.[contenthash:10].js',
+        filename: 'js/[name].[contenthash:10].js',
         // 输出路径
         // __dirname 是node.js的变量, 代表当前文件所在目录的绝对路径
         path: resolve(__dirname, 'build')
@@ -247,7 +268,16 @@ module.exports = {
         }),
         new OptimizeCssAssetsWebpackPlugin()
     ],
+    /**
+     * 1. 会将入口文件中引入的node_modules依赖包单独打包成一个chunk输出
+     * 2. 多入口情况下, 多个入口文件中的公共依赖只会单独输出成一个chunk
+     */
+    optimization: {
+        splitChunks: {
+            chunks: 'all'
+        }
+    },
     // 模式
     mode: 'production', //生产环境会自动压缩js代码
-    devtool: 'source-map'
+    // devtool: 'source-map'
 }
