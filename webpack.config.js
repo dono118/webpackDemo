@@ -37,7 +37,16 @@
             },
         3) 使用import动态导入语法引入的js文件, 会被单独打包成一个chunk
             import(/* webpackChunkName: 'test' *\/'./test').then(...).catch(...)
-
+ * 
+ * 5. lazy loading 
+ *      正常加载: 并行加载(同时加载多个文件)
+ *      懒加载: 当文件需要时才加载
+ *      预加载(prefetch): 等其他资源加载完成后, 利用空闲时间提前加载好
+ *      $('#btn').click(() => {
+ *          import(/* webpackChunkName: 'test', webpackPrefetch: true *\/'./test')
+ *              .then(...).catch(...)
+ *      })
+ * 
  */
 
 // resolve用来拼接绝对路径

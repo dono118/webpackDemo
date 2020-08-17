@@ -13,3 +13,6 @@ export function multiply(x, y) {
 export function divide(x, y) {
   return x / y;
 }
+
+// eslint-disable-next-line
+ console.log('test.js加载了...')
