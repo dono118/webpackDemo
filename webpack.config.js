@@ -47,6 +47,12 @@
  *              .then(...).catch(...)
  *      })
  * 
+ * 6. PWA(Progressive web apps, 渐进式 Web 应用)
+ *      workbox -->workbox-webpack-plugin
+ *      sw代码必须运行在服务器上
+ *          1) 用 nodejs 自己写一个服务器
+ *          2) 安装一个 npm i serve -g --> serve -s build 启动服务器 根目录为build
+ * 
  */
 
 // resolve用来拼接绝对路径
@@ -57,6 +63,8 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 // 压缩css
 const OptimizeCssAssetsWebpackPlugin = require("optimize-css-assets-webpack-plugin");
+// pwa
+const WorkboxWebpackPlugin = require("workbox-webpack-plugin");
 
 // 设置nodejs环境变量
 process.env.NODE_ENV = "production";//生产环境
@@ -136,8 +144,12 @@ module.exports = {
                  *   设置检查规则: 在 package.json-->eslintConfig 中设置
                  *   推荐使用airbnb --> eslint-config-airbnb-base eslint eslint-plugin-import
                  *  "eslintConfig": {
-                        "extends": "airbnb-base"
-                    }
+                        "extends": "airbnb-base",
+                        "parser": "babel-eslint", // 解决各种 Parsing error 报错
+                        "env": {
+                            "browser": true //支持浏览器端全局变量window,document等
+                        }
+                    },
                  */
                 test: /\.js$/,
                 exclude: /node_modules/,
@@ -275,7 +287,16 @@ module.exports = {
             filename: 'css/built.[contenthash:10].css'
 
         }),
-        new OptimizeCssAssetsWebpackPlugin()
+        new OptimizeCssAssetsWebpackPlugin(),
+        new WorkboxWebpackPlugin.GenerateSW({
+            /**
+             * 1. 帮助 serviceWork 快速启动
+             * 2. 删除旧的 serviceWork
+             * 3. 生成一个 serviceWork 配置文件
+             */
+            clientsClaim: true,
+            skipWaiting: true
+        })
     ],
     /**
      * 1. 会将入口文件中引入的node_modules依赖包单独打包成一个chunk输出
