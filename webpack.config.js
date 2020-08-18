@@ -53,6 +53,10 @@
  *          1) 用 nodejs 自己写一个服务器
  *          2) 安装一个 npm i serve -g --> serve -s build 启动服务器 根目录为build
  * 
+ * 7. 多进程打包
+ * 8. externals index.html中通过src引入的外部文件拒绝被打包
+ * 9. dll 使用dll技术对某些库(第三方库: 如 jquery react vue)进行单独打包
+ *      可以很大程度上加快项目的构建速度和减少项目的打包体积
  */
 
 // resolve用来拼接绝对路径
@@ -64,7 +68,10 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 // 压缩css
 const OptimizeCssAssetsWebpackPlugin = require("optimize-css-assets-webpack-plugin");
 // pwa
-const WorkboxWebpackPlugin = require("workbox-webpack-plugin");
+// const WorkboxWebpackPlugin = require("workbox-webpack-plugin");
+// webpack
+const Webpack = require("webpack");
+const AddAssetHtmlWebpackPlugin = require("add-asset-html-webpack-plugin");
 
 // 设置nodejs环境变量
 process.env.NODE_ENV = "production";//生产环境
@@ -288,14 +295,22 @@ module.exports = {
 
         }),
         new OptimizeCssAssetsWebpackPlugin(),
-        new WorkboxWebpackPlugin.GenerateSW({
-            /**
-             * 1. 帮助 serviceWork 快速启动
-             * 2. 删除旧的 serviceWork
-             * 3. 生成一个 serviceWork 配置文件
-             */
-            clientsClaim: true,
-            skipWaiting: true
+        // new WorkboxWebpackPlugin.GenerateSW({
+        //     /**
+        //      * 1. 帮助 serviceWork 快速启动
+        //      * 2. 删除旧的 serviceWork
+        //      * 3. 生成一个 serviceWork 配置文件
+        //      */
+        //     clientsClaim: true,
+        //     skipWaiting: true
+        // }),
+        // manifest.json 会告诉 webpack 哪些库不需要打包
+        new Webpack.DllReferencePlugin({
+            manifest: resolve(__dirname, 'dll/manifest.json')
+        }),
+        // 将需要的文件打包输出, 并在html中自动引入该资源
+        new AddAssetHtmlWebpackPlugin({
+            filepath: resolve(__dirname, 'dll/jquery.js'),
         })
     ],
     /**
@@ -310,9 +325,9 @@ module.exports = {
     // 模式
     mode: 'production', //生产环境会自动压缩js代码
     // 引入外部文件
-    externals: {
-        // 拒绝jquery打包
-        jquery: 'jQuery'
-    },
+    // externals: {
+    //     // 拒绝jquery打包
+    //     jquery: 'jQuery'
+    // },
     // devtool: 'source-map'
 }
