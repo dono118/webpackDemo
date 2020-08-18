@@ -8,9 +8,6 @@
   },
   "author": "Leo",
   "license": "ISC",
-  "dependencies": {
-    "jquery": "^3.5.1"
-  },
   "devDependencies": {
     "@babel/core": "^7.11.1",
     "@babel/preset-env": "^7.11.0",
@@ -59,5 +56,8 @@
   "sideEffects": [
     "*.css",
     "*.less"
-  ]
+  ],
+  "dependencies": {
+    "jquery": "^3.5.1"
+  }
 }

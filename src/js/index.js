@@ -1,5 +1,6 @@
 // 引入样式文件
 import '../css/index.css';
+import $ from 'jquery';
 
 function sum(...args) {
   return args.reduce((p, c) => p + c, 0);
@@ -44,3 +45,6 @@ if ('serviceWorker' in navigator) {
       });
   });
 }
+
+// eslint-disable-next-line
+console.log($);

@@ -309,5 +309,10 @@ module.exports = {
     },
     // 模式
     mode: 'production', //生产环境会自动压缩js代码
+    // 引入外部文件
+    externals: {
+        // 拒绝jquery打包
+        jquery: 'jQuery'
+    },
     // devtool: 'source-map'
 }
