@@ -230,33 +230,48 @@ module.exports = {
                          */
                         test: /\.js$/,
                         exclude: /node_modules/,
-                        loader: 'babel-loader',
-                        options: {
-                            // 预设: 指示babel如何做兼容性处理
-                            presets: [
-                                [
-                                    '@babel/preset-env',
-                                    {
-                                        // 按需加载
-                                        useBuiltIns: 'usage',
-                                        // 指定core-js版本
-                                        corejs: {
-                                            version: 3
-                                        },
-                                        // 指定兼容性做到哪个版本浏览器
-                                        targets: {
-                                            chrome: '60',
-                                            firefox: '60',
-                                            ie: '9',
-                                            safari: '10',
-                                            edge: '17'
-                                        }
-                                    }
-                                ]
-                            ],
-                            // 开启babel缓存
-                            cacheDirectory: true
-                        }
+                        use: [
+                            /**
+                             * 开启多进程打包
+                             * 进程启动大概需要600ms, 进程间通信也会有开销
+                             * 只有工作消耗时间比较长(js代码量比较大)时, 才需要多进程打包
+                             */
+                            {
+                                loader: 'thread-loader',
+                                options: {
+                                    workers: 2 // 进程2个
+                                }
+                            },
+                            {
+                                loader: 'babel-loader',
+                                options: {
+                                    // 预设: 指示babel如何做兼容性处理
+                                    presets: [
+                                        [
+                                            '@babel/preset-env',
+                                            {
+                                                // 按需加载
+                                                useBuiltIns: 'usage',
+                                                // 指定core-js版本
+                                                corejs: {
+                                                    version: 3
+                                                },
+                                                // 指定兼容性做到哪个版本浏览器
+                                                targets: {
+                                                    chrome: '60',
+                                                    firefox: '60',
+                                                    ie: '9',
+                                                    safari: '10',
+                                                    edge: '17'
+                                                }
+                                            }
+                                        ]
+                                    ],
+                                    // 开启babel缓存
+                                    cacheDirectory: true
+                                }
+                            }
+                        ]
                     }
                 ]
             }
